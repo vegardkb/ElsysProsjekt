@@ -1,40 +1,58 @@
-/* Sensor test sketch
-  for more information see http://www.ladyada.net/make/logshield/lighttemp.html
-  */
- 
-#define aref_voltage 3.3         // we tie 3.3V to ARef and measure it with a multimeter!
- 
- 
- 
- 
-//TMP36 Pin Variables
-int tempPin = 0;        //the analog pin the TMP36's Vout (sense) pin is connected to
+#include <TheThingsNetwork.h>
+
+
+const char *appEui = "70B3D57ED0016ADA";
+const char *appKey = "9BA875FB5C9B81205BFE16AB99D8D22C";
+    
+#define loraSerial Serial1
+#define debugSerial Serial
+#define aref_voltage 3.3
+#define freqPlan TTN_FP_EU868
+    
+TheThingsNetwork ttn(loraSerial, debugSerial, freqPlan);
+
+
+//global variables
+const int tempPin = 0;        //the analog pin the TMP36's Vout (sense) pin is connected to
                         //the resolution is 10 mV / degree centigrade with a
                         //500 mV offset to allow for negative temperatures
 int tempReading;        // the analog reading from the sensor
- 
-void setup(void) {
-  // We'll send debugging information via the Serial monitor
-  Serial.begin(9600);   
- 
+
+
+
+void setup() {
+  loraSerial.begin(57600);
+  debugSerial.begin(9600);
+      
+  // Initialize LED output pin
+  pinMode(LED_BUILTIN, OUTPUT);
+    
+  // Wait a maximum of 10s for Serial Monitor
+  while (!debugSerial && millis() < 10000);
+    
+  debugSerial.println("-- STATUS");
+  ttn.showStatus();
+
+  debugSerial.println("-- JOIN");
+  ttn.join(appEui, appKey);
+
+
   // If you want to set the aref to something other than 5v
   analogReference(EXTERNAL);
 }
- 
- 
-void loop(void) {
- 
-  tempReading = analogRead(tempPin);  
+
+void loop() {
+  //TempSensorAnalog
+  tempReading = analogRead(tempPin);
   
-  // converting that reading to voltage, which is based off the reference voltage
-  float voltage = tempReading * aref_voltage;
-  voltage /= 1024.0; 
- 
- 
-  // now print out the temperature
-  float temperatureC = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
-                                               //to degrees ((volatge - 500mV) times 100)
-  Serial.print(temperatureC); Serial.println(" degrees C");
- 
-  delay(1000);
+  byte payload[2];
+  payload[0] = highByte(tempReading);
+  payload[1] = lowByte(tempReading);
+
+    
+  // Send it off
+  ttn.sendBytes(tempReading, sizeof(tempReading));
+      
+  delay(5000); //delay 5000 ms
+
 }
