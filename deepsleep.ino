@@ -2,7 +2,8 @@
 
 /*Basert på
 http://www.kevindarrah.com/download/arduino_code/LowPowerVideo.ino
-samt the things uno quick start guide
+samt the things uno quick start guide.
+Her er ikke digitalinterrupt implementert, wakeup kun gjennom watchdog
 */
 
 //IKKE TESTET ENDA
