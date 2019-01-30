@@ -38,7 +38,7 @@ void setup() {
   //SETUP WATCHDOG TIMER
   WDTCSR = (24);//change enable and WDE - also resets
   WDTCSR = (33);//prescalers only - get rid of the WDE and WDCE bit
-  WDTCSR |= (1<<6);//enable interrupt mode
+  WDTCSR |= (1<<6);//enable interrupt mode, hva er dette??
 
   //Disable ADC - don't forget to flip back after waking up if using ADC in your application ADCSRA |= (1 << 7);
   ADCSRA &= ~(1 << 7);
