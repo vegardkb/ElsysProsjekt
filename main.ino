@@ -1,4 +1,6 @@
 #include <TheThingsNetwork.h>
+#include "measurments.h"
+#include "sleep.h"
 
 /*Basert på
 http://www.kevindarrah.com/download/arduino_code/LowPowerVideo.ino
@@ -15,7 +17,6 @@ const char *appKey = "9BA875FB5C9B81205BFE16AB99D8D22C";
     
 TheThingsNetwork ttn(loraSerial, debugSerial, freqPlan);
 
-
 //Global variables
 //analog pins
 const int tempPin = 1;
@@ -27,31 +28,18 @@ const int condPin = 4;
 const int condDig_1 = 3;
 const int condDig_2 = 4;
 
-//
+//measurment constants
 const int phInterval = 20;
 const int phOffset = 0; //Used for calibrating pH sensor
 const int nPh = 4;
 const int nCondCycles = 4;
 
-
-//bytes for keeping track of measurments
-byte temp;  // Temperature
-byte pH;    // pH
-byte turb;  // Turbidity
-byte cond;  // Conductivity
-byte count; // if several sets of measurments are sent
-            // in each packet this will be used for
-            // calculating a rough time stamp
-
-//array for the measurments
-byte payload[5]{temp, pH, turb, cond, count};
-
 //number of sleep cycles, sleep time '=' nCycles*8 seconds
 //remove const if implementing system to update sleep length from ttn
-int nCycles = 1;
-
-//number of measurment sets in each packet
-int nMeasurments = 1;
+//number of measurment sets in each packet and number of variables (temp, pH, turb, cond, count)
+byte nCycles = 1;
+byte nMeasurments = 1;
+byte nVariables = 5;
 
 
 void setup() {
@@ -69,29 +57,40 @@ void setup() {
 
   debugSerial.println("-- JOIN");
   ttn.join(appEui, appKey);
+
+  //analogReference(EXTERNAL);
 }
 
 void loop() {  
   
-  count = 0;
-  //Enable ADC before measuring
-  //ADCSRA |= (1 << 7);
+  byte* payload;
+  payload = new byte[nMeasurments*nVariables];
+  if(payload == NULL){
+    //Error allocating memory
+  }
+  else{
+    Measurment m;
+    for(byte i = 0; i < nMeasurments; ++i){
+      //sleep()
+      //...zzzz
+      //goodMorning()
+      
+      m = takeMeasurment(i);
+      for(int j = 0; j < nMeasurments*nVariables; ++j){
+        debugSerial.println(payload[j]);
+      }
+      debugSerial.println("");
+      updatePayload(i, payload, m);
+    }
+    
+    // Send payload
+    ttn.sendBytes(payload, nMeasurments*nVariables);
+    delay(5000); //Wait for message
+  }
   
-  takeMeasurment(payload[0], payload[1], payload[2], payload[3], payload[4]);
-
-  //Disable ADC after measuring
-  //ADCSRA &= ~(1 << 7);
-  
-  
-  // Send payload
-  ttn.sendBytes(payload, sizeof(payload));
-  delay(5000); //Wait for message
-
+  delete[] payload;
 }
 
-ISR(WDT_vect){
-  //DON'T FORGET THIS!  Needed for the watch dog timer.  This is called after a watch dog timer timeout - this is the interrupt function called after waking up
-}// watchdog interrupt
 
 //Called when receiving message
 void message(const byte* payload, int length, int port){
