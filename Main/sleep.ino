@@ -1,5 +1,9 @@
 #include "sleep.h"
 
+#if defined (__AVR__)
+    #include <avr/power.h>
+#endif
+
 //sleep.ino
 
 //Setup for sleeping
@@ -29,6 +33,9 @@ void sleep(int nCycles){
 	
   //disable ADC
   ADCSRA &= ~(1 << 7);
+
+  power_usart1_disable(); //disable usart port for radio
+  
   // sleep for nCycles*8 sec
   for(int i = 0; i < nCycles; i++){
     //delay();
@@ -38,6 +45,9 @@ void sleep(int nCycles){
     MCUCR = (MCUCR & ~(1 << 5)) | (1 << 6); //then set the BODS bit and clear the BODSE bit at the same time
     __asm__  __volatile__("sleep");         //in line assembler to go to sleep
   }
+
+  power_usart1_enable(); //enable usart port for radio
+  
 }
 
 void goodMorning(){

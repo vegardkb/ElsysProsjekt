@@ -19,12 +19,13 @@ Measurment takeMeasurment(const byte gCount){
 }
 
 
-void updatePayload(const int numM, byte* payload, const Measurment& m){
+void updatePayload(const int numM, byte* payload, const Measurment& m, const byte nCycles){
     payload[numM*nVariables] = m.temp;
     payload[numM*nVariables+1] = m.pH;
     payload[numM*nVariables+2] = m.turb;
     payload[numM*nVariables+3] = m.cond;
     payload[numM*nVariables+4] = m.count;
+    payload[numM*nVariables+5] = nCycles;
 }
 
 

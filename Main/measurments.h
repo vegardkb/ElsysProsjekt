@@ -17,7 +17,7 @@ typedef struct Measurment{
 Measurment takeMeasurment(const byte gCount);
 
 
-void updatePayload(const int numM, byte* payload, const Measurment& m);
+void updatePayload(const int numM, byte* payload, const Measurment& m, const byte nCycles);
 
 
 //Called when woken up by digital interrupt

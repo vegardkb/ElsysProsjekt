@@ -1,7 +1,7 @@
 #include <TheThingsNetwork.h>
 #include "measurments.h"
 #include "sleep.h"
-
+#include <EEPROM.h>
 /*Basert på
 http://www.kevindarrah.com/download/arduino_code/LowPowerVideo.ino
 samt the things uno quick start guide
@@ -34,21 +34,40 @@ const int phOffset = 0; //Used for calibrating pH sensor
 const int nPh = 4;
 const int nCondCycles = 4;
 
+const int cyclesAddr = 0;
+const int flagAddr = 1;
+
+const int measAddr = 2;
+const int flag1Addr = 3;
+
 //number of sleep cycles, sleep time '=' nCycles*8 seconds
 //remove const if implementing system to update sleep length from ttn
 //number of measurment sets in each packet and number of variables (temp, pH, turb, cond, count)
 byte nCycles = 1;
 byte nMeasurments = 1;
-byte nVariables = 5;
+byte nVariables = 6;
+
+
 
 
 void setup() {
+  ttn.wake();
+  
   ttn.onMessage(message);
   
   loraSerial.begin(57600);
   debugSerial.begin(9600);
-      
-    
+
+  byte hasWrittenToCycles =  EEPROM.read(flagAddr); //check if the interval has been written to
+  if(hasWrittenToCycles == 1){
+    nCycles = EEPROM.read(cyclesAddr); //update the interval on setup
+  }
+
+  byte hasWrittenToMeas =  EEPROM.read(flag1Addr); //check if the interval has been written to
+  if(hasWrittenToMeas == 1){
+    nMeasurments = EEPROM.read(measAddr); //update the interval on setup
+  }
+   
   // Wait a maximum of 10s for Serial Monitor
   while (!debugSerial && millis() < 10000);
     
@@ -58,7 +77,7 @@ void setup() {
   debugSerial.println("-- JOIN");
   ttn.join(appEui, appKey);
 
-  //analogReference(EXTERNAL);
+  //analogReference(EXTERNAL);//dont do this
 }
 
 void loop() {  
@@ -71,12 +90,15 @@ void loop() {
   else{
     Measurment m;
     for(byte i = 0; i < nMeasurments; ++i){
-      //sleep()
+      
+      //ttn.sleep(1000);
+      sleep(nCycles);
       //...zzzz
-      //goodMorning()
+      goodMorning();
+      //ttn.wake();
       
       m = takeMeasurment(i);
-      updatePayload(i, payload, m);
+      updatePayload(i, payload, m, nCycles);
     }
     
     // Send payload
@@ -95,12 +117,20 @@ void message(const byte* payload, int length, int port){
   //
   if(length == 1){
     nCycles = payload[0];
+    EEPROM.write(cyclesAddr, nCycles); //save the interval into flash memory
+    EEPROM.write(flagAddr, 1); //write a 1 to indicate that the interval has changed
     return;
   }
   //Making sure nMeasurments does not become too big to send
   else if(length == 2 && payload[1] < 10){
     nCycles = payload[0];
+    EEPROM.write(cyclesAddr, nCycles);//save the interval into flash memory
+    EEPROM.write(flagAddr, 1); //write a 1 to indicate that the interval has changed
+    
     nMeasurments = payload[1];
+
+    EEPROM.write(measAddr, nMeasurments);//save the interval into flash memory
+    EEPROM.write(flag1Addr, 1); //write a 1 to indicate that the interval has changed
   }
   
 }
