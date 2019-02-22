@@ -76,16 +76,13 @@ void loop() {
       //goodMorning()
       
       m = takeMeasurment(i);
-      for(int j = 0; j < nMeasurments*nVariables; ++j){
-        debugSerial.println(payload[j]);
-      }
-      debugSerial.println("");
       updatePayload(i, payload, m);
     }
     
     // Send payload
     ttn.sendBytes(payload, nMeasurments*nVariables);
     delay(5000); //Wait for message
+    
   }
   
   delete[] payload;
