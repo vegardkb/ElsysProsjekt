@@ -15,7 +15,7 @@ const char *appKey = "9BA875FB5C9B81205BFE16AB99D8D22C";
 #define aref_voltage 3.3
 #define freqPlan TTN_FP_EU868
     
-TheThingsNetwork ttn(loraSerial, debugSerial, freqPlan);
+static TheThingsNetwork ttn(loraSerial, debugSerial, freqPlan);
 
 //Global variables
 //analog pins

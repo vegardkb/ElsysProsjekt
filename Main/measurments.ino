@@ -66,7 +66,7 @@ byte readTemp(){
 void tempError(){
   //Turn on supply voltage
   
-  float sensorValue = 0;
+  int sensorValue = 0;
   for(int i = 0; i < 4; ++i){
     sensorValue += analogRead(tempPin);
   }
