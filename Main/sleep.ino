@@ -1,7 +1,7 @@
 #include "sleep.h"
 
 #if defined (__AVR__)
-    #include <avr/power.h>
+#include <avr/power.h>
 #endif
 
 //sleep.ino

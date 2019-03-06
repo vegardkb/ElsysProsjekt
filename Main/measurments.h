@@ -25,11 +25,15 @@ void digitalInterrupt();
 
 
 byte readTemp();
+void tempError();
 
 byte readpH();
+void phError();
 
 byte readConductivity();
+void condError();
 
 byte readTurbidity();
+void turbError();
 
 #endif

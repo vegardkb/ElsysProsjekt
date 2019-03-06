@@ -30,7 +30,7 @@ const int condDig_2 = 4;
 
 //measurment constants
 const int phInterval = 20;
-const int phOffset = 0; //Used for calibrating pH sensor
+const int phOffset = 0.09; //Used for calibrating pH sensor
 const int nPh = 4;
 const int nCondCycles = 4;
 
@@ -92,9 +92,9 @@ void loop() {
     for(byte i = 0; i < nMeasurments; ++i){
       
       //ttn.sleep(1000);
-      sleep(nCycles);
+      //sleep(nCycles);
       //...zzzz
-      goodMorning();
+      //goodMorning();
       //ttn.wake();
       
       m = takeMeasurment(i);
@@ -103,7 +103,7 @@ void loop() {
     
     // Send payload
     ttn.sendBytes(payload, nMeasurments*nVariables);
-    delay(5000); //Wait for message
+    delay(1000); //Wait for message
     
   }
   
