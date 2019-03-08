@@ -77,13 +77,12 @@ void setup() {
   debugSerial.println("-- JOIN");
   ttn.join(appEui, appKey);
 
-  //analogReference(EXTERNAL);//dont do this
+  sleepInit();
+
 }
 
 void loop() {  
-  
-  byte* payload;
-  payload = new byte[nMeasurments*nVariables];
+  byte* payload = new byte[nMeasurments*nVariables];
   if(payload == NULL){
     //Error allocating memory
   }
@@ -91,7 +90,7 @@ void loop() {
     Measurment m;
     for(byte i = 0; i < nMeasurments; ++i){
       
-      //ttn.sleep(1000);
+      //ttn.sleep(nCycles*8000);
       //sleep(nCycles);
       //...zzzz
       //goodMorning();

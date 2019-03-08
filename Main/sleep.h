@@ -6,13 +6,13 @@
 
 
 //Setup for sleeping
-void sleepInit();
+static void sleepInit();
 
 //Go to sleep
-void sleep(int nCycles);
+static void sleep(int nCycles);
 
 //Wake up
-void goodMorning();
+static void goodMorning();
 
 
 ISR(WDT_vect){

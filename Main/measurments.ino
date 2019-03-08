@@ -51,7 +51,7 @@ byte readTemp(){
   
   //check that temperature is in range (0, ???)
   if(avg < 450 || avg > 705){
-    tempError();
+    //tempError();
   }
   avg +=0.5;
   
@@ -97,7 +97,7 @@ byte readpH(){
   sensorValue /= nPh;
 
   if(sensorValue < 300 || sensorValue > 555){
-    phError();
+    //phError();
   }
   
 /*
