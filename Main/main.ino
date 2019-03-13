@@ -2,13 +2,16 @@
 #include "measurments.h"
 #include "sleep.h"
 #include <EEPROM.h>
+#if defined (__AVR__)
+#include <avr/power.h>
+#endif
 /*Basert på
 http://www.kevindarrah.com/download/arduino_code/LowPowerVideo.ino
 samt the things uno quick start guide
 */
 
 const char *appEui = "70B3D57ED0016ADA";
-const char *appKey = "9BA875FB5C9B81205BFE16AB99D8D22C";
+const char *appKey = "5CCFA43140CDD066E05EF81E4821631D";
     
 #define loraSerial Serial1
 #define debugSerial Serial
@@ -27,6 +30,10 @@ const int condPin = 4;
 //digital pins
 const int condDig_1 = 3;
 const int condDig_2 = 4;
+const int radioSwitch = 7;
+const int sensorSwitch = 8;
+const int phTurbSwitch = 9;
+
 
 //measurment constants
 const int phInterval = 20;
@@ -51,6 +58,9 @@ byte nVariables = 6;
 
 
 void setup() {
+  
+  pinMode(radioSwitch, OUTPUT);
+  digitalWrite(radioSwitch, HIGH);
   ttn.wake();
   
   ttn.onMessage(message);
@@ -77,7 +87,7 @@ void setup() {
   debugSerial.println("-- JOIN");
   ttn.join(appEui, appKey);
 
-  sleepInit();
+  //sleepInit();
 
 }
 
@@ -89,20 +99,19 @@ void loop() {
   else{
     Measurment m;
     for(byte i = 0; i < nMeasurments; ++i){
-      
-      //ttn.sleep(nCycles*8000);
+      //sleepInit();
       //sleep(nCycles);
       //...zzzz
       //goodMorning();
-      //ttn.wake();
-      
+
+      //Measure and update payload
       m = takeMeasurment(i);
       updatePayload(i, payload, m, nCycles);
     }
     
     // Send payload
     ttn.sendBytes(payload, nMeasurments*nVariables);
-    delay(1000); //Wait for message
+    delay(5000); //Wait for message
     
   }
   

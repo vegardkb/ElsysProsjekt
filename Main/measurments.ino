@@ -3,23 +3,30 @@
 
 
 //Function takes measurment and
-//updates global variables for measurments
+//returns measurment object
 Measurment takeMeasurment(const byte gCount){
   Measurment m;
+
+  //Enable sensor switch
+  digitalWrite(sensorSwitch, HIGH);
   m.temp = readTemp(); 
-  delay(500);
   //m.cond = readConductivity();
   m.cond = 0;
-  delay(500);
-  //analogReference(EXTERNAL) 5V for turbiditet og pH
+  digitalWrite(sensorSwitch, LOW);
+  
+  //Enable ph, turb switch
+  digitalWrite(phTurbSwitch, HIGH);
   m.turb = readTurbidity();
-  delay(500);
+  //Wait for pH to stabilize?
   m.count = gCount;
   m.pH = readpH();
+  digitalWrite(phTurbSwitch, LOW);
+  
   return m;
 }
 
 
+// Update payload with measurment data
 void updatePayload(const int numM, byte* payload, const Measurment& m, const byte nCycles){
     payload[numM*nVariables] = m.temp;
     payload[numM*nVariables+1] = m.pH;
@@ -50,16 +57,19 @@ byte readTemp(){
   avg /= 4;
   
   //check that temperature is in range (0, ???)
-  if(avg < 450 || avg > 705){
-    //tempError();
+  if(avg < 510){
+    avg = 510;
+  }
+  else if(avg > 765){
+    avg = 765;
   }
   avg +=0.5;
   
-  byte temp = byte{static_cast<int>(avg)-450};
-  /*
+  byte temp = byte{static_cast<int>(avg)-510};
+  
   Serial.print("Temp: ");
   Serial.println(temp);
-  */
+  
   return temp;
 }
 
@@ -96,14 +106,17 @@ byte readpH(){
 
   sensorValue /= nPh;
 
-  if(sensorValue < 300 || sensorValue > 555){
-    //phError();
+  if(sensorValue < 300){
+    sensorValue = 300;
+  }
+  else if(sensorValue > 555){
+    sensorValue = 555;
   }
   
-/*
+
   Serial.print("pH: ");
   Serial.println(sensorValue-300);
-  */
+  
   return byte{sensorValue - 300};
 }
 
@@ -151,10 +164,10 @@ byte readConductivity(){
 
   digitalWrite(condDig_1, LOW);
   digitalWrite(condDig_2, LOW);
-/*
+
   Serial.print("Cond: ");
   Serial.println(map(sensorValue, 0, 1023, 0, 255));
-*/
+
   return map(sensorValue, 0, 1023, 0, 255);//More sophisticated solution
 }
 
@@ -200,10 +213,10 @@ byte readTurbidity(){
   sensorValue /= 5;
   
   
-  //Serial.print("Turb: ");
-  //Serial.println(sensorValue);
+  Serial.print("Turb: ");
+  Serial.println(sensorValue);
   if(sensorValue < 768){
-    turbError();
+    sensorValue = 768;
   }
   Serial.println(sensorValue - 768);
   

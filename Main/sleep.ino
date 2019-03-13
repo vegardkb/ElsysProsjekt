@@ -12,8 +12,7 @@ void sleepInit(){
   //Save Power by writing all Digital IO LOW - note that pins just need to be tied one way or another, do not damage devices!
   //Use exceptions for pins which need to be used for measurments or other stuff
   for (int i = 0; i < 14; i++) {
-    if(i != 2)
-      pinMode(i, OUTPUT);
+    pinMode(i, OUTPUT);
   }
 
   attachInterrupt(0, digitalInterrupt, FALLING); //interrupt for waking up, attach button and stuff
@@ -29,12 +28,11 @@ void sleepInit(){
   SMCR |= 1;//enable sleep
 }
 
-void sleep(int nCycles){
-	
+void sleep(int nCycles){  
   //disable ADC
   ADCSRA &= ~(1 << 7);
 
-  power_usart1_disable(); //disable usart port for radio
+  //power_usart1_disable(); //disable usart port for radio
   
   // sleep for nCycles*8 sec
   for(int i = 0; i < nCycles; i++){
@@ -46,11 +44,28 @@ void sleep(int nCycles){
     __asm__  __volatile__("sleep");         //in line assembler to go to sleep
   }
 
-  power_usart1_enable(); //enable usart port for radio
+  //power_usart1_enable(); //enable usart port for radio
   
 }
 
 void goodMorning(){
   //enable ADC
   ADCSRA |= (1 << 7);
+  
+  /*loraSerial.begin(57600);
+  debugSerial.begin(9600);
+  */
+  //Initialize radio
+  pinMode(radioSwitch, OUTPUT);
+  digitalWrite(radioSwitch, HIGH);
+  /*
+  ttn.wake();
+  ttn.onMessage(message);
+  
+  debugSerial.println("-- STATUS");
+  ttn.showStatus();
+
+  debugSerial.println("-- JOIN");
+  ttn.join(appEui, appKey);
+  */
 }
