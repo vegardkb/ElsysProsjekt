@@ -26,6 +26,7 @@ void sleepInit(){
   //ENABLE SLEEP - this enables the sleep mode
   SMCR |= (1 << 2); //power down mode
   SMCR |= 1;//enable sleep
+  
 }
 
 void sleep(int nCycles){  
