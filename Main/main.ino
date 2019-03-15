@@ -28,12 +28,12 @@ const int turbPin = 3;
 const int condPin = 4;
 
 //digital pins
-const int condDig_1 = 3;
-const int condDig_2 = 4;
+const int condDig_1 = 5;
+const int condDig_2 = 6;
 const int radioSwitch = 7;
 const int sensorSwitch = 8;
 const int phTurbSwitch = 9;
-
+const int radioResetPin = 4;
 
 //measurment constants
 const int phInterval = 20;
@@ -58,15 +58,8 @@ byte nVariables = 6;
 
 
 void setup() {
-  
-  pinMode(radioSwitch, OUTPUT);
-  digitalWrite(radioSwitch, HIGH);
-  ttn.wake();
-  
-  ttn.onMessage(message);
-  
-  loraSerial.begin(57600);
-  debugSerial.begin(9600);
+
+  initRadio();
 
   byte hasWrittenToCycles =  EEPROM.read(flagAddr); //check if the interval has been written to
   if(hasWrittenToCycles == 1){
@@ -79,17 +72,36 @@ void setup() {
   }
    
   // Wait a maximum of 10s for Serial Monitor
-  while (!debugSerial && millis() < 10000);
+  while (!debugSerial && millis() < 5000);
+
+  
+
+  sleepInit();
+
+}
+
+void initRadio(){
+  pinMode(radioSwitch, OUTPUT);
+  digitalWrite(radioSwitch, HIGH);
+  pinMode(radioResetPin, OUTPUT);
+  digitalWrite(radioResetPin, HIGH);
+  ttn.wake();
+  
+  ttn.onMessage(message);
+  
+  loraSerial.begin(57600);
+  debugSerial.begin(9600);
+  
+  // Wait a maximum of 10s for Serial Monitor
+  while (!debugSerial && millis() < 5000);
     
   debugSerial.println("-- STATUS");
   ttn.showStatus();
 
   debugSerial.println("-- JOIN");
   ttn.join(appEui, appKey);
-
-  //sleepInit();
-
 }
+
 
 void loop() {  
   byte* payload = new byte[nMeasurments*nVariables];
@@ -99,11 +111,11 @@ void loop() {
   else{
     Measurment m;
     for(byte i = 0; i < nMeasurments; ++i){
-      //sleepInit();
-      //sleep(nCycles);
+      gotoSleep(nCycles);
       //...zzzz
-      //goodMorning();
-
+      goodMorning();
+      initRadio();
+      
       //Measure and update payload
       m = takeMeasurment(i);
       updatePayload(i, payload, m, nCycles);
