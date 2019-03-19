@@ -17,7 +17,8 @@ Measurment takeMeasurment(const byte gCount){
   //Enable ph, turb switch
   digitalWrite(phTurbSwitch, HIGH);
   m.turb = readTurbidity();
-  //Wait for pH to stabilize?
+  //Wait for pH to stabilize? Need more sophisticated solution
+  //delay(60000);
   m.count = gCount;
   m.pH = readpH();
   digitalWrite(phTurbSwitch, LOW);
@@ -43,29 +44,64 @@ void digitalInterrupt(){
   //needed for the digital input interrupt
 }
 
+void swap(int* a, int* b){
+  int temp = *a;
+  *a = *b;
+  *b = temp;
+}
+
+void quicksort(int* arr, int l, int r){
+  if (l >= r)
+    return;
+  
+  int pivot = arr[r];
+  int cnt = l;
+
+  for(int i = l; i <= r; ++i){
+    if(arr[i] <= pivot){
+      swap(&arr[cnt], &arr[i]);
+    }
+    ++cnt;
+  }
+
+  quicksort(arr, l, cnt-2);
+  quicksort(arr, cnt, r);
+}
+
+// Assumes sorted array
+int median(int* arr, int len){
+  int i = len/2;
+  if(len%2){
+    return (arr[i] + arr[i+1])/2;
+  }
+  else
+    return arr[i+1];
+}
+
 
 byte readTemp(){
-  //Turn on supply voltage
+  // Allocate memory
+  int* values = new int[nTemp];
   
-  float avg = 0;
   for(int i = 0; i < 4; ++i){
-    avg += analogRead(tempPin);
+    values[i] = analogRead(tempPin);
   }
 
-  //Turn off supply voltage
-  
-  avg /= 4;
+  quicksort(values, 0, nTemp-1);
+  int med = median(values, nTemp);
+
+  // Release memory
+  delete[] values;
   
   //check that temperature is in range (0, ???)
-  if(avg < 510){
-    avg = 510;
+  if(med < 510){
+    med = 510;
   }
-  else if(avg > 765){
-    avg = 765;
+  else if(med > 765){
+    med = 765;
   }
-  avg +=0.5;
   
-  byte temp = byte{static_cast<int>(avg)-510};
+  byte temp = byte{(med-510) % 256};
   
   Serial.print("Temp: ");
   Serial.println(temp);
@@ -73,171 +109,67 @@ byte readTemp(){
   return temp;
 }
 
-void tempError(){
-  //Turn on supply voltage
-  
-  int sensorValue = 0;
-  for(int i = 0; i < 4; ++i){
-    sensorValue += analogRead(tempPin);
-  }
-
-  //Turn off supply voltage
-  sensorValue /= 4;
-
-  byte payload[3];
-  payload[0] = highByte(sensorValue);
-  payload[1] = lowByte(sensorValue);
-  payload[2] = 0;
-  ttn.sendBytes(payload, 3);//Fungerer dette? static ttn??
-  
-}
-
 byte readpH(){
-  //Turn on supply voltage
-  //Wait one minute
-  
-  int sensorValue = 0;
+  int* values = new int[nPh];
   for(int i = 0; i < nPh; i++){
-    sensorValue += analogRead(phPin);
+    values[i] = analogRead(phPin);
     delay(phInterval); // Wait phInterval ms
   }
 
-  //Turn off supply voltage
+  quicksort(values, 0, nPh-1);
+  int med = median(values, nPh);
 
-  sensorValue /= nPh;
-
-  if(sensorValue < 300){
-    sensorValue = 300;
+  if(med < 300){
+    med = 300;
   }
-  else if(sensorValue > 555){
-    sensorValue = 555;
+  else if(med > 555){
+    med = 555;
   }
   
 
   Serial.print("pH: ");
-  Serial.println(sensorValue-300);
+  Serial.println(med-300);
   
-  return byte{sensorValue - 300};
+  return byte{(med - 300) % 256};
 }
 
-void phError(){
-  //Turn on supply voltage
-  //Wait one minute
-  
-  int sensorValue = 0;
-  for(int i = 0; i < nPh; i++){
-    sensorValue += analogRead(phPin);
-    delay(phInterval); // Wait phInterval ms
-  }
-
-  //Turn off supply voltage
-
-  sensorValue /= nPh;
-
-  byte payload[3];
-  payload[0] = highByte(sensorValue);
-  payload[1] = lowByte(sensorValue);
-  payload[2] = 1;
-  ttn.sendBytes(payload, 3);//Fungerer dette? static ttn??
-}
-
+// Maybe use temperature as input for more accuracy
 byte readConductivity(){
+  int* values = new int[nCond];
   
-  int sensorValue = 0;
-  
-  for(int i = 0; i < nCondCycles; i++){
-    
-    digitalWrite(condDig_1, HIGH);
-    digitalWrite(condDig_2, LOW);
-    delay(1);
-
-    sensorValue += analogRead(condPin);
-
-    digitalWrite(condDig_1, LOW);
-    digitalWrite(condDig_2, HIGH);
-    delay(1);
-
-    //Dette vil vel ikke fungere???
-    sensorValue += 1023 - analogRead(condPin);
+  for(int i = 0; i < nCond; ++i){
+    values[i] = analogRead(condPin);
   }
-  sensorValue = sensorValue / (nCondCycles);
-
-  digitalWrite(condDig_1, LOW);
-  digitalWrite(condDig_2, LOW);
-
-  Serial.print("Cond: ");
-  Serial.println(map(sensorValue, 0, 1023, 0, 255));
-
-  return map(sensorValue, 0, 1023, 0, 255);//More sophisticated solution
-}
-
-void condError(){
-  int sensorValue = 0;
   
-  for(int i = 0; i < nCondCycles; i++){
-    
-    digitalWrite(condDig_1, HIGH);
-    digitalWrite(condDig_2, LOW);
-    delay(1);
+  quicksort(values, 0, nCond-1);
+  int med = median(values, nCond);
+  
+  delete[] values;
 
-    sensorValue += analogRead(condPin);
-
-    digitalWrite(condDig_1, LOW);
-    digitalWrite(condDig_2, HIGH);
-    delay(1);
-
-    //Dette vil vel ikke fungere???
-    sensorValue += 1023 - analogRead(condPin);
+  if(med > 255*2){
+    med = 255*2;
   }
-  sensorValue = sensorValue / (nCondCycles);
 
-  digitalWrite(condDig_1, LOW);
-  digitalWrite(condDig_2, LOW);
-
-  byte payload[3];
-  payload[0] = highByte(sensorValue);
-  payload[1] = lowByte(sensorValue);
-  payload[2] = 3;
-  ttn.sendBytes(payload, 3);//Fungerer dette? static ttn??
+  return byte{(med/2)%256};
 }
 
 byte readTurbidity(){
-  //Turn on supply voltage
-  int sensorValue = 0;
+  int* values = new int[nTurb];
 
-  for(int i = 0; i < 5; ++i){
-    sensorValue += analogRead(turbPin);
+  for(int i = 0; i < nTurb; ++i){
+    values[i] = analogRead(turbPin);
   }
-  //Turn off supply voltage
   
-  sensorValue /= 5;
-  
+  quicksort(values, 0, nTurb-1);
+  int med = median(values, nTurb);
+  delete[] values;
   
   Serial.print("Turb: ");
-  Serial.println(sensorValue);
-  if(sensorValue < 768){
-    sensorValue = 768;
+  Serial.println(med);
+  if(med < 768){
+    med = 768;
   }
-  Serial.println(sensorValue - 768);
+  Serial.println(med - 768);
   
-  return byte{sensorValue - 768};
-}
-
-void turbError(){
-  //Turn on supply voltage
-  int sensorValue = 0;
-
-  for(int i = 0; i < 5; ++i){
-    sensorValue += analogRead(turbPin);
-  }
-  //Turn off supply voltage
-  
-  sensorValue /= 5;
-
-
-  byte payload[3];
-  payload[0] = highByte(sensorValue);
-  payload[1] = lowByte(sensorValue);
-  payload[2] = 2;
-  ttn.sendBytes(payload, 3);//Fungerer dette? static ttn??
+  return byte{(med - 768) % 256};
 }

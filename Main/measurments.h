@@ -23,6 +23,12 @@ void updatePayload(const int numM, byte* payload, const Measurment& m, const byt
 //Called when woken up by digital interrupt
 void digitalInterrupt();
 
+void swap(int* a, int* b);
+
+void quicksort(int* arr, int l, int r);
+
+int median(int* arr, int len);
+
 
 byte readTemp();
 void tempError();

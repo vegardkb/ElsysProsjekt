@@ -72,7 +72,6 @@ void gotoSleep(int nCycles){
 }
 
 void goodMorning(){
-  //enable ADC
 
   power_usart1_enable();
   power_timer3_enable();
@@ -82,9 +81,10 @@ void goodMorning(){
   power_twi_enable();
   power_usb_enable();
 
-  Serial1.begin(57600);
+  //Serial1.begin(57600);
   loraSerial.begin(57600);
-  
+
+  //enable ADC
   ADCSRA |= (1 << 7);
   
 }

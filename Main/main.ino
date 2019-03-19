@@ -5,10 +5,6 @@
 #if defined (__AVR__)
 #include <avr/power.h>
 #endif
-/*Basert på
-http://www.kevindarrah.com/download/arduino_code/LowPowerVideo.ino
-samt the things uno quick start guide
-*/
 
 const char *appEui = "70B3D57ED0016ADA";
 const char *appKey = "5CCFA43140CDD066E05EF81E4821631D";
@@ -39,7 +35,9 @@ const int radioResetPin = 4;
 const int phInterval = 20;
 const int phOffset = 0.09; //Used for calibrating pH sensor
 const int nPh = 4;
-const int nCondCycles = 4;
+const int nCond = 4;
+const int nTemp = 4;
+const int nTurb = 4;
 
 const int cyclesAddr = 0;
 const int flagAddr = 1;
@@ -59,6 +57,7 @@ byte nVariables = 6;
 
 void setup() {
 
+  // Initialize radio
   initRadio();
 
   byte hasWrittenToCycles =  EEPROM.read(flagAddr); //check if the interval has been written to
@@ -71,11 +70,10 @@ void setup() {
     nMeasurments = EEPROM.read(measAddr); //update the interval on setup
   }
    
-  // Wait a maximum of 10s for Serial Monitor
+  // Wait a maximum of 5s for Serial Monitor
   while (!debugSerial && millis() < 5000);
 
-  
-
+  // Setup sleep
   sleepInit();
 
 }
@@ -133,7 +131,7 @@ void loop() {
 
 //Called when receiving message
 void message(const byte* payload, int length, int port){
-  Serial.println("--- MESSAGE");
+  debugSerial.println("--- MESSAGE");
   //
   if(length == 1){
     nCycles = payload[0];
