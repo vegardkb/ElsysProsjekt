@@ -83,7 +83,7 @@ byte readTemp(){
   // Allocate memory
   int* values = new int[nTemp];
   
-  for(int i = 0; i < 4; ++i){
+  for(int i = 0; i < nTemp; ++i){
     values[i] = analogRead(tempPin);
   }
 
@@ -119,6 +119,8 @@ byte readpH(){
   quicksort(values, 0, nPh-1);
   int med = median(values, nPh);
 
+  delete[] values;
+  
   if(med < 300){
     med = 300;
   }
@@ -162,6 +164,7 @@ byte readTurbidity(){
   
   quicksort(values, 0, nTurb-1);
   int med = median(values, nTurb);
+  
   delete[] values;
   
   Serial.print("Turb: ");
