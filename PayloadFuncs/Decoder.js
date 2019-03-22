@@ -1,5 +1,7 @@
-function timeStamp(nCycles, count){
-  var time = Date.now() - (count*nCycles*9);
+
+function timeStamp(nCycles, nMeasurments, count){
+  var newTime = Date.now();
+  var time = newTime - (nMeasurments - count - 1)*(nCycles*9.96)*1000;
   return time;
 }
 
@@ -43,29 +45,29 @@ function Decoder(bytes, port){
 	var N = bytes.length/6;
 
 	var payload = Array(N*4);
-	var time = Array(N);
 
 	for(var i = 0; i < N; ++i){
+		var time = timeStamp(bytes[6*i + 5], N, bytes[6*i+4]);
 		var theTemp = temp(10030, 10000, 25, 3435, 510, bytes[6*i]);
 		payload[i*4] = {
 			type: "TEMPERATURE",
 			value: theTemp,
-			timeCreated: timeStamp(bytes[6*i + 5], (N-bytes[6*i+4])),
+			timeCreated: time,
 		};
 		payload[i*4+1] = {
 			type: "PH",
 			value: ph(bytes[6*i+1], 300, 0.09),
-			timeCreated: timeStamp(bytes[6*i + 5], (N-bytes[6*i+4])),
+			timeCreated: time,
 		};
 		payload[i*4+2] = {
 			type: "TURBIDITY",
 			value: turb(bytes[6*i+2], 768),
-			timeCreated: timeStamp(bytes[6*i + 5], (N-bytes[6*i+4])),
+			timeCreated: time,
 		};
 		payload[i*4+3] = {
 			type: "CONDUCTIVITY",
 			value: cond(bytes[6*i+3], theTemp),
-			timeCreated: timeStamp(bytes[6*i + 5], (N-bytes[6*i+4])),
+			timeCreated: time,
 		};
 	}
 	return {
