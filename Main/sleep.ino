@@ -28,7 +28,8 @@ void sleepInit(){
   
 }
 
-void gotoSleep(int nCycles){  
+void gotoSleep(int nCycles){ 
+   
   //disable ADC
   ADCSRA &= ~(1 << 7);
   
@@ -40,12 +41,15 @@ void gotoSleep(int nCycles){
   digitalWrite(radioSwitch, LOW);
 
   
+  
   loraSerial.end();
   Serial1.end();
+
+  debugSerial.end();
+  Serial.end();
   
   pinMode(1, OUTPUT);
   digitalWrite(1, LOW);
-
 
   power_usart1_disable();
   power_timer3_disable();
@@ -56,7 +60,9 @@ void gotoSleep(int nCycles){
   power_usb_disable();
 
   
+  
   digitalWrite(radioSwitch, LOW);
+  
   // sleep for nCycles*8 sec
   for(int i = 0; i < nCycles; i++){
     //delay();
@@ -72,7 +78,7 @@ void gotoSleep(int nCycles){
 }
 
 void goodMorning(){
-
+  
   power_usart1_enable();
   power_timer3_enable();
   power_timer1_enable();
@@ -81,10 +87,13 @@ void goodMorning(){
   power_twi_enable();
   power_usb_enable();
 
-  debugSerial.begin(57600);
+  Serial1.begin(57600);
   loraSerial.begin(57600);
-
+  Serial.begin(9600);
+  debugSerial.begin(9600);
+  
+  
   //enable ADC
   ADCSRA |= (1 << 7);
-  
+
 }
