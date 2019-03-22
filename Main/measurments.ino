@@ -10,8 +10,7 @@ Measurment takeMeasurment(const byte gCount){
   //Enable sensor switch
   digitalWrite(sensorSwitch, HIGH);
   m.temp = readTemp(); 
-  //m.cond = readConductivity();
-  m.cond = 0;
+  m.cond = readConductivity();
   digitalWrite(sensorSwitch, LOW);
   
   //Enable ph, turb switch

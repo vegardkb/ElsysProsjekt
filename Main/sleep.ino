@@ -32,7 +32,7 @@ void gotoSleep(int nCycles){
   //disable ADC
   ADCSRA &= ~(1 << 7);
   
-  ttn.sleep(10000);
+  ttn.sleep(nCycles*8000);
   pinMode(radioResetPin, OUTPUT);
   digitalWrite(radioResetPin, LOW);
   
@@ -81,7 +81,7 @@ void goodMorning(){
   power_twi_enable();
   power_usb_enable();
 
-  //Serial1.begin(57600);
+  debugSerial.begin(57600);
   loraSerial.begin(57600);
 
   //enable ADC

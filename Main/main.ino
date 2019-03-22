@@ -52,7 +52,7 @@ byte nCycles = 1;
 byte nMeasurments = 1;
 byte nVariables = 6;
 
-
+void initRadio(int i = 0);
 
 
 void setup() {
@@ -78,7 +78,7 @@ void setup() {
 
 }
 
-void initRadio(){
+void initRadio(int i){
   pinMode(radioSwitch, OUTPUT);
   digitalWrite(radioSwitch, HIGH);
   pinMode(radioResetPin, OUTPUT);
@@ -97,7 +97,14 @@ void initRadio(){
   ttn.showStatus();
 
   debugSerial.println("-- JOIN");
-  ttn.join(appEui, appKey);
+  if(!ttn.join(appEui, appKey) && i < 10){
+    initRadio(++i);
+  }
+  else if(i >= 10){
+    ttn.resetHard(radioResetPin);
+    delay(5000);
+    initRadio();
+  }
 }
 
 
@@ -112,16 +119,15 @@ void loop() {
       gotoSleep(nCycles);
       //...zzzz
       goodMorning();
-      initRadio();
       
       //Measure and update payload
       m = takeMeasurment(i);
       updatePayload(i, payload, m, nCycles);
     }
-    
+    initRadio();
     // Send payload
     ttn.sendBytes(payload, nMeasurments*nVariables);
-    delay(5000); //Wait for message
+    delay(1000); //Wait for message
     
   }
   
