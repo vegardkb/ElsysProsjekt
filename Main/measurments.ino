@@ -94,14 +94,14 @@ byte readTemp(){
   delete[] values;
   
   //check that temperature is in range (0, ???)
-  if(med < 250){
-    med = 250;
+  if(med < 300){
+    med = 300;
   }
-  else if(med > 505){
-    med = 505;
+  else if(med > 555){
+    med = 555;
   }
   
-  byte temp = byte{(med-250) % 256};
+  byte temp = byte{(med-300) % 256};
   
   Serial.print("Temp: ");
   Serial.println(temp);

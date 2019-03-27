@@ -49,7 +49,7 @@ function Decoder(bytes, port){
 
 	for(var i = 0; i < N; ++i){
 		var time = timeStamp(bytes[6*i + 5], N, bytes[6*i+4]);
-		var theTemp = temp(10030, 10000, 25, 3435, 250, bytes[6*i]);
+		var theTemp = temp(10030, 10000, 25, 3435, 300, bytes[6*i]);
 		payload[i*4] = {
 			type: "TEMPERATURE",
 			value: theTemp,
