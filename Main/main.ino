@@ -15,6 +15,7 @@ const char *appKey = "5CCFA43140CDD066E05EF81E4821631D";
 #define freqPlan TTN_FP_EU868
     
 static TheThingsNetwork ttn(loraSerial, debugSerial, freqPlan);
+//static TheThingsNetwork ttn(loraSerial, debugSerial, freqPlan, sf); sf = spreading factor, defaults to 7
 
 //Global variables
 //analog pins
@@ -52,7 +53,7 @@ byte nCycles = 1;
 byte nMeasurments = 1;
 byte nVariables = 6;
 
-void initRadio(int i = 0);
+void initRadio();
 
 
 void setup() {
@@ -78,7 +79,7 @@ void setup() {
 
 }
 
-void initRadio(int i){
+void initRadio(){
   pinMode(radioSwitch, OUTPUT);
   digitalWrite(radioSwitch, HIGH);
   pinMode(radioResetPin, OUTPUT);
@@ -97,25 +98,32 @@ void initRadio(int i){
   ttn.showStatus();
 
   debugSerial.println("-- JOIN");
-  if(!ttn.join(appEui, appKey) && i < 10){
-    initRadio(++i);
+  ttn.join(appEui, appKey); // Default: retries = infinite, retryDelay = 10 000 ms
+}
+
+
+void connectAndSend(byte* payload){
+  initRadio();
+  // Send payload, if it fails, wait and try again
+  if(ttn.sendBytes(payload, nMeasurments*nVariables) == TTN_ERROR_SEND_COMMAND_FAILED){
+    delay(1000);
+    ttn.sendBytes(payload, nMeasurments*nVariables);
   }
-  else if(i >= 10){
-    ttn.resetHard(radioResetPin);
-    delay(5000);
-    initRadio();
-  }
+  delay(1000); //Wait for message
 }
 
 
 void loop() {  
   byte* payload = new byte[nMeasurments*nVariables];
-  if(payload == NULL){
+  if(payload == NULL)
+  {
     //Error allocating memory
   }
-  else{
+  else
+  {
     Measurment m;
-    for(byte i = 0; i < nMeasurments; ++i){
+    for(byte i = 0; i < nMeasurments; ++i)
+    {
       gotoSleep(nCycles);
       //...zzzz
       goodMorning();
@@ -124,11 +132,7 @@ void loop() {
       m = takeMeasurment(i);
       updatePayload(i, payload, m, nCycles);
     }
-    initRadio();
-    // Send payload
-    ttn.sendBytes(payload, nMeasurments*nVariables);
-    delay(1000); //Wait for message
-    
+    connectAndSend(payload);
   }
   
   delete[] payload;
