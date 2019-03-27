@@ -57,7 +57,6 @@ void initRadio();
 
 
 void setup() {
-
   // Initialize radio
   initRadio();
 
