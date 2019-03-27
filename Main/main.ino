@@ -70,10 +70,13 @@ void setup() {
   if(hasWrittenToMeas == 1){
     nMeasurments = EEPROM.read(measAddr); //update the interval on setup
   }
-   
+
+  //Check for new message
+  ttn.poll();
   // Wait a maximum of 5s for Serial Monitor
   while (!debugSerial && millis() < 5000);
 
+ 
   // Setup sleep
   sleepInit();
 
