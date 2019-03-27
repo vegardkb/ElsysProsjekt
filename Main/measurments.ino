@@ -9,6 +9,7 @@ Measurment takeMeasurment(const byte gCount){
 
   //Enable sensor switch
   digitalWrite(sensorSwitch, HIGH);
+  delay(500);
   m.temp = readTemp(); 
   m.cond = readConductivity();
   digitalWrite(sensorSwitch, LOW);
@@ -87,20 +88,20 @@ byte readTemp(){
   }
 
   quicksort(values, 0, nTemp-1);
-  int med = median(values, nTemp);
+  int med = median(values, nTemp)/2;
 
   // Release memory
   delete[] values;
   
   //check that temperature is in range (0, ???)
-  if(med < 510){
-    med = 510;
+  if(med < 250){
+    med = 250;
   }
-  else if(med > 765){
-    med = 765;
+  else if(med > 505){
+    med = 505;
   }
   
-  byte temp = byte{(med-510) % 256};
+  byte temp = byte{(med-250) % 256};
   
   Serial.print("Temp: ");
   Serial.println(temp);
