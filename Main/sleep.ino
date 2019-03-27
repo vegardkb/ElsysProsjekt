@@ -65,7 +65,9 @@ void gotoSleep(int nCycles){
   
   // sleep for nCycles*8 sec
   for(int i = 0; i < nCycles; i++){
-    //delay();
+    // Less than 56 sec of sleep remaining: turn on ph and turb sensor
+    if(nCycles - i < 7)
+      digitalWrite(phTurbSwitch, HIGH);
     
     //BOD DISABLE - this must be called right before the __asm__ sleep instruction
     MCUCR |= (3 << 5);                      //set both BODS and BODSE at the same time

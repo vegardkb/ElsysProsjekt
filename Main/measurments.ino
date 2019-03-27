@@ -14,7 +14,7 @@ Measurment takeMeasurment(const byte gCount){
   digitalWrite(sensorSwitch, LOW);
   
   //Enable ph, turb switch
-  digitalWrite(phTurbSwitch, HIGH);
+  //digitalWrite(phTurbSwitch, HIGH);
   m.turb = readTurbidity();
   //Wait for pH to stabilize? Need more sophisticated solution
   //delay(60000);
