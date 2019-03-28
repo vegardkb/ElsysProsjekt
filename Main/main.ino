@@ -35,10 +35,10 @@ const int radioResetPin = 4;
 //measurment constants
 const int phInterval = 20;
 const int phOffset = 0.09; //Used for calibrating pH sensor
-const int nPh = 4;
-const int nCond = 4;
-const int nTemp = 4;
-const int nTurb = 4;
+const int nPh = 10;
+const int nCond = 10;
+const int nTemp = 10;
+const int nTurb = 10;
 
 const int cyclesAddr = 0;
 const int flagAddr = 1;
@@ -51,7 +51,7 @@ const int flag1Addr = 3;
 //number of measurment sets in each packet and number of variables (temp, pH, turb, cond, count)
 byte nCycles = 1;
 byte nMeasurments = 1;
-byte nVariables = 6;
+byte nVariables = 4;
 
 void initRadio();
 
@@ -105,6 +105,8 @@ void initRadio(){
 
 
 void connectAndSend(byte* payload){
+  //Send nCycles
+  payload[0] = nCycles;
   initRadio();
   // Send payload, if it fails, wait and try again
   if(ttn.sendBytes(payload, nMeasurments*nVariables) == TTN_ERROR_SEND_COMMAND_FAILED){
@@ -116,7 +118,7 @@ void connectAndSend(byte* payload){
 
 
 void loop() {  
-  byte* payload = new byte[nMeasurments*nVariables];
+  byte* payload = new byte[1+nMeasurments*nVariables];
   if(payload == NULL)
   {
     //Error allocating memory
@@ -131,8 +133,8 @@ void loop() {
       goodMorning();
       
       //Measure and update payload
-      m = takeMeasurment(i);
-      updatePayload(i, payload, m, nCycles);
+      m = takeMeasurment();
+      updatePayload(i, payload, m);
     }
     connectAndSend(payload);
   }

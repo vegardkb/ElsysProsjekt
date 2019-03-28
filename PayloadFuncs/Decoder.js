@@ -1,13 +1,12 @@
-
 function timeStamp(nCycles, nMeasurments, count){
-  var newTime = Date.now()+24*60*60*1000; //Compensate for time zone
+  var newTime = Date.now();
   var time = newTime - (nMeasurments - count - 1)*(nCycles*9.96)*1000;
   return time;
 }
 
 function temp(resistance, thermnom, tempnorm, bcoef, minAnlValue, aRead){
-  var res = ((aRead+minAnlValue)*2/1023)*5;
-  res = (res*resistance)/(5-res);
+  var volt = ((aRead+minAnlValue)*2/1024)*5;
+  var res = (volt*resistance)/(5-volt);
   
   var A = 0.9122666410e-03, B = 2.477216773e-04, C = 2.050750481e-7;
   
@@ -22,9 +21,8 @@ function ph(aRead, aOffset, offset){
 
 
 function turb(aRead, offset){
-  var volt = (( aRead + offset)*5)/1024.0;// Add offset to recover value before compression
-										  // and convert to voltage
-  var turb = -1120.4*volt*volt + 5742.3*volt -4352.9; //Convert from voltage to NTU
+  var turb = (( aRead + offset)*5)/1024.0;//Convert to voltage
+  turb = -1120.4*turb*turb + 5742.3*turb -4352.9; //Convert from voltage to NTU
   if(turb < 0){
     turb = 0;
   }
@@ -43,13 +41,16 @@ function cond(aRead, temp){
 
 
 function Decoder(bytes, port){
-	var N = bytes.length/6;
+	var N = (bytes.length-1)/4;
 
 	var payload = Array(N*4);
+	
+	var nCycles = bytes[0];
 
 	for(var i = 0; i < N; ++i){
-		var time = timeStamp(bytes[6*i + 5], N, bytes[6*i+4]);
-		var theTemp = temp(10030, 10000, 25, 3435, 300, bytes[6*i]);
+		var base = 1+4*i;
+		var time = timeStamp(nCycles, N, i);
+		var theTemp = temp(10030, 10000, 25, 3435, 200, bytes[base]);
 		payload[i*4] = {
 			type: "TEMPERATURE",
 			value: theTemp,
@@ -57,17 +58,17 @@ function Decoder(bytes, port){
 		};
 		payload[i*4+1] = {
 			type: "PH",
-			value: ph(bytes[6*i+1], 300, 0.09),
+			value: ph(bytes[base+1], 300, 0.09),
 			timeCreated: time,
 		};
 		payload[i*4+2] = {
 			type: "TURBIDITY",
-			value: turb(bytes[6*i+2], 768),
+			value: turb(bytes[base+2], 768),
 			timeCreated: time,
 		};
 		payload[i*4+3] = {
 			type: "CONDUCTIVITY",
-			value: cond(bytes[6*i+3], theTemp),
+			value: cond(bytes[base+3], theTemp),
 			timeCreated: time,
 		};
 	}

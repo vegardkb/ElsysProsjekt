@@ -4,7 +4,7 @@
 
 //Function takes measurment and
 //returns measurment object
-Measurment takeMeasurment(const byte gCount){
+Measurment takeMeasurment(){
   Measurment m;
 
   //Enable sensor switch
@@ -19,7 +19,6 @@ Measurment takeMeasurment(const byte gCount){
   m.turb = readTurbidity();
   //Wait for pH to stabilize? Need more sophisticated solution
   //delay(60000);
-  m.count = gCount;
   m.pH = readpH();
   digitalWrite(phTurbSwitch, LOW);
   
@@ -28,13 +27,12 @@ Measurment takeMeasurment(const byte gCount){
 
 
 // Update payload with measurment data
-void updatePayload(const int numM, byte* payload, const Measurment& m, const byte nCycles){
-    payload[numM*nVariables] = m.temp;
-    payload[numM*nVariables+1] = m.pH;
-    payload[numM*nVariables+2] = m.turb;
-    payload[numM*nVariables+3] = m.cond;
-    payload[numM*nVariables+4] = m.count;
-    payload[numM*nVariables+5] = nCycles;
+void updatePayload(const int numM, byte* payload, const Measurment& m){
+  int base = 1+numM*nVariables;
+  payload[base] = m.temp;
+  payload[base+1] = m.pH;
+  payload[base+2] = m.turb;
+  payload[base+3] = m.cond;
 }
 
 
@@ -94,14 +92,14 @@ byte readTemp(){
   delete[] values;
   
   //check that temperature is in range (0, ???)
-  if(med < 300){
-    med = 300;
+  if(med < 200){
+    med = 200;
   }
-  else if(med > 555){
-    med = 555;
+  else if(med > 455){
+    med = 455;
   }
   
-  byte temp = byte{(med-300) % 256};
+  byte temp = byte{(med-200) % 256};
   
   Serial.print("Temp: ");
   Serial.println(temp);

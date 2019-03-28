@@ -8,16 +8,15 @@ typedef struct Measurment{
   byte pH;
   byte turb;
   byte cond;  
-  byte count;
 }Measurment;
 
 
 //Function takes measurment and
 //updates global variables for measurments
-Measurment takeMeasurment(const byte gCount);
+Measurment takeMeasurment();
 
 
-void updatePayload(const int numM, byte* payload, const Measurment& m, const byte nCycles);
+void updatePayload(const int numM, byte* payload, const Measurment& m);
 
 
 //Called when woken up by digital interrupt
