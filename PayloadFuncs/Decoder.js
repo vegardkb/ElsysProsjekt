@@ -50,7 +50,7 @@ function Decoder(bytes, port){
 	for(var i = 0; i < N; ++i){
 		var base = 1+4*i;
 		var time = timeStamp(nCycles, N, i);
-		var theTemp = temp(10030, 10000, 25, 3435, 100, bytes[base]);
+		var theTemp = temp(9800, 10000, 25, 3435, 100, bytes[base]);
 		payload[i*4] = {
 			type: "TEMPERATURE",
 			value: theTemp,
