@@ -8,7 +8,7 @@ function temp(resistance, thermnom, tempnorm, bcoef, minAnlValue, aRead){
   var volt = ((aRead+minAnlValue)*2/1024)*3.3;
   var res = resistance*(3.3/volt-1);
   
-  var A = 0.9122666410e-03, B = 2.477216773e-04, C = 2.050750481e-7;
+  var A = 0.9194943821e-03, B = 2.465047674e-04, C = 2.100675268e-7;
   
   var temp = (1.0 / (A + B*Math.log(res) + C*Math.log(res)*Math.log(res)*Math.log(res)));  // Steinhart and Hart Equation. T  = 1 / {A + B[ln(R)] + C[ln(R)]^3}
   temp = temp - 273.15;
