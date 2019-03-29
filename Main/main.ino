@@ -111,7 +111,7 @@ void connectAndSend(byte* payload){
   // Send payload, if it fails, wait and try again
   if(ttn.sendBytes(payload, nMeasurments*nVariables) == TTN_ERROR_SEND_COMMAND_FAILED){
     delay(1000);
-    ttn.sendBytes(payload, nMeasurments*nVariables);
+    ttn.sendBytes(payload, 1 + nMeasurments*nVariables);
   }
   delay(1000); //Wait for message
 }
