@@ -109,7 +109,7 @@ void connectAndSend(byte* payload){
   payload[0] = nCycles;
   initRadio();
   // Send payload, if it fails, wait and try again
-  if(ttn.sendBytes(payload, nMeasurments*nVariables) == TTN_ERROR_SEND_COMMAND_FAILED){
+  if(ttn.sendBytes(payload, 1 + nMeasurments*nVariables) == TTN_ERROR_SEND_COMMAND_FAILED){
     delay(1000);
     ttn.sendBytes(payload, 1 + nMeasurments*nVariables);
   }

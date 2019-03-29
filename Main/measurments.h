@@ -29,16 +29,12 @@ void quicksort(int* arr, int l, int r);
 int median(int* arr, int len);
 
 
-byte readTemp();
-void tempError();
+byte readTemp(int aMin);
 
-byte readpH();
-void phError();
+byte readpH(int aMin);
 
-byte readConductivity();
-void condError();
+byte readConductivity(int aMin);
 
-byte readTurbidity();
-void turbError();
+byte readTurbidity(int aMin);
 
 #endif

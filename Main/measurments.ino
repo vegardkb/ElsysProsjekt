@@ -10,16 +10,16 @@ Measurment takeMeasurment(){
   //Enable sensor switch
   digitalWrite(sensorSwitch, HIGH);
   delay(500);
-  m.temp = readTemp(); 
-  m.cond = readConductivity();
+  m.temp = readTemp(100); 
+  m.cond = readConductivity(0);
   digitalWrite(sensorSwitch, LOW);
   
   //Enable ph, turb switch
   //digitalWrite(phTurbSwitch, HIGH);
-  m.turb = readTurbidity();
+  m.turb = readTurbidity(768);
   //Wait for pH to stabilize? Need more sophisticated solution
   //delay(60000);
-  m.pH = readpH();
+  m.pH = readpH(300);
   digitalWrite(phTurbSwitch, LOW);
   
   return m;
@@ -77,7 +77,7 @@ int median(int* arr, int len){
 }
 
 
-byte readTemp(){
+byte readTemp(int aMin){
   // Allocate memory
   int* values = new int[nTemp];
   
@@ -92,14 +92,14 @@ byte readTemp(){
   delete[] values;
   
   //check that temperature is in range (0, ???)
-  if(med < 50){
-    med = 50;
+  if(med < aMin){
+    med = aMin;
   }
-  else if(med > 305){
-    med = 305;
+  else if(med > aMin+255){
+    med = aMin + 255;
   }
   
-  byte temp = byte{(med-50) % 256};
+  byte temp = byte{(med-aMin) % 256};
   
   Serial.print("Temp: ");
   Serial.println(temp);
@@ -107,7 +107,7 @@ byte readTemp(){
   return temp;
 }
 
-byte readpH(){
+byte readpH(int aMin){
   int* values = new int[nPh];
   for(int i = 0; i < nPh; i++){
     values[i] = analogRead(phPin);
@@ -119,22 +119,22 @@ byte readpH(){
 
   delete[] values;
   
-  if(med < 300){
-    med = 300;
+  if(med < aMin){
+    med = aMin;
   }
-  else if(med > 555){
-    med = 555;
+  else if(med > aMin+255){
+    med = aMin+255;
   }
   
 
   Serial.print("pH: ");
-  Serial.println(med-300);
+  Serial.println(med-aMin);
   
-  return byte{(med - 300) % 256};
+  return byte{(med - aMin) % 256};
 }
 
 // Maybe use temperature as input for more accuracy
-byte readConductivity(){
+byte readConductivity(int aMin){
   int* values = new int[nCond];
   
   for(int i = 0; i < nCond; ++i){
@@ -153,7 +153,7 @@ byte readConductivity(){
   return byte{(med/2)%256};
 }
 
-byte readTurbidity(){
+byte readTurbidity(int aMin){
   int* values = new int[nTurb];
 
   for(int i = 0; i < nTurb; ++i){
@@ -167,10 +167,10 @@ byte readTurbidity(){
   
   Serial.print("Turb: ");
   Serial.println(med);
-  if(med < 768){
-    med = 768;
+  if(med < aMin){
+    med = aMin;
   }
-  Serial.println(med - 768);
+  Serial.println(med - aMin);
   
-  return byte{(med - 768) % 256};
+  return byte{(med - aMin) % 256};
 }

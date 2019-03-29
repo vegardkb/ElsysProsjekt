@@ -5,8 +5,8 @@ function timeStamp(nCycles, nMeasurments, count){
 }
 
 function temp(resistance, thermnom, tempnorm, bcoef, minAnlValue, aRead){
-  var volt = ((aRead+minAnlValue)*2/1024)*5;
-  var res = (volt*resistance)/(5-volt);
+  var volt = ((aRead+minAnlValue)*2/1024)*3.3;
+  var res = resistance*(3.3/volt-1);
   
   var A = 0.9122666410e-03, B = 2.477216773e-04, C = 2.050750481e-7;
   
@@ -50,7 +50,7 @@ function Decoder(bytes, port){
 	for(var i = 0; i < N; ++i){
 		var base = 1+4*i;
 		var time = timeStamp(nCycles, N, i);
-		var theTemp = temp(10030, 10000, 25, 3435, 200, bytes[base]);
+		var theTemp = temp(10030, 10000, 25, 3435, 100, bytes[base]);
 		payload[i*4] = {
 			type: "TEMPERATURE",
 			value: theTemp,
